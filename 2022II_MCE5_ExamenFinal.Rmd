@@ -68,11 +68,22 @@ Realizar los siguientes análisis y respectivas interpretaciones:
 
 1. Análisis exploratorio.
 
+
+
 2. Planteamiento de hipótesis.
+
+H. Nula: No va a variar la cantidad de mosquitos al aplicar los insecticidas.
+
+H. Alterna: La cantidad de mosquitos varia mucho al aplicar los insectos.
+
 
 3. Análisis de regresión 
 
+
+
 4. Planteamiento del modelo. 
+
+
 
 5. Validez del modelo.
 
@@ -96,11 +107,55 @@ Realizar los siguientes análisis y respectivas interpretaciones:
 
 1. Análisis exploratorio: autocorrelación y descomposición, análisis estacional.
 
+```{r}
+# Carga los paquetes necesarios
+library(forecast)
+library(ggplot2)
+
+# Convierte la matriz de datos en una serie temporal
+ts <- ts(ts, start = 1, frequency = 12)
+
+# Visualiza la serie temporal
+plot(ts, main = "Serie Temporal")
+
+# Calcula la autocorrelación
+par(mar = c(3, 3, 2, 2))
+acf_result <- acf(ts)
+
+# Grafica la función de autocorrelación
+plot(acf_result, main = "Autocorrelación")
+
+# Realiza la descomposición de la serie temporal
+decomp_result <- decompose(ts)
+
+# Grafica la descomposición
+plot(decomp_result)
+
+# Análisis estacional
+seasonal_result <- decompose(ts)$seasonal
+
+# Grafica el componente estacional
+ggplot() +
+  geom_line(aes(x = 1:length(seasonal_result), y = seasonal_result)) +
+  labs(title = "Componente Estacional")
+
+```
+
+
 2. ARIMA, SARIMA, ETS, NNAR
+
+```{r}
+
+
+```
+
 
 3. Validez de los modelos.
 
+
+
 4. Predicción a 20 años o a 24 meses según corresponda. 
+
 
 
 
@@ -127,4 +182,53 @@ Seleccione una especie de planta y una especie de animal; asimismo, dos tipos de
 - Chirimoya: *Anona cherimola*
 
 Luego realice un análisis espacial de distribución de la especie en Ecuador continental en base a los datos de presencia del GBIF (use rgbif para descargar la data). Explique el resultado y compare la diferencia entre la salida de los dos modelos. En qué regiones los modelos difieren más en la predicción?   
+
+```{r}
+library(rgbif)
+
+library(tidyverse)
+occ = occ_data(scientificName = 'Ceiba pentandra', 
+                limit = 20000, 
+                hasCoordinate = TRUE, 
+                hasGeospatialIssue = FALSE)
+
+occ_col <- filter(occ$data, country == 'ecuador')
+shp <- raster::getData('GADM', country = 'ECU', level = 1)
+
+gg <- ggplot() +
+  geom_point(data = occ_col, aes(x = decimalLongitude, y = decimalLatitude), color = 'brown') +
+  geom_polygon(data = shp, aes(x = long, y = lat, group = group), color = 'yellow', fill = NA) +
+  coord_fixed(ylim = c(-5, 12.5), xlim = c(-80, -67)) +
+  xlab('Longitud') +
+  ylab('Latitud')
+
+ggsave(plot = gg, filename = 'Ceiba pentandra.png', units = 'cm', width = 12, height = 16, dpi = 300)
+
+gg
+
+```
+```{r}
+library(rgbif)
+
+library(tidyverse)
+occ = occ_data(scientificName = 'Aedes aegypti', 
+                limit = 200000, 
+                hasCoordinate = TRUE, 
+                hasGeospatialIssue = FALSE)
+
+occ_col <- filter(occ$data, country == 'ecuador')
+shp <- raster::getData('GADM', country = 'ECU', level = 1)
+
+gg <- ggplot() +
+  geom_point(data = occ_col, aes(x = decimalLongitude, y = decimalLatitude), color = 'brown') +
+  geom_polygon(data = shp, aes(x = long, y = lat, group = group), color = 'yellow', fill = NA) +
+  coord_fixed(ylim = c(-5, 12.5), xlim = c(-80, -67)) +
+  xlab('Longitud') +
+  ylab('Latitud')
+
+ggsave(plot = gg, filename = 'Aedes aegypti.png', units = 'cm', width = 12, height = 16, dpi = 300)
+
+gg
+```
+
 
